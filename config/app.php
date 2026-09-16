@@ -461,4 +461,14 @@ return [
         'errorLevel' => null,
         'fixtureStrategy' => null,
     ],
+
+    /**
+     * Migrations configuration.
+     *
+     *  - `unsigned_primary_keys` - Create table `id` columns as UNSIGNED by default.
+     *    Foreign key columns still need `'signed' => false` to match.
+     */
+    'Migrations' => [
+        'unsigned_primary_keys' => true,
+    ],
 ];
