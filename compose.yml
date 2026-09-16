@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports: ["8765:8765"]
+    volumes: [".:/app"]
+    depends_on: [db]
+    environment:
+      DATABASE_URL: "mysql://cake:secret@db/cake?encoding=utf8mb4&timezone=UTC"
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: cake
+      MYSQL_USER: cake
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes: ["dbdata:/var/lib/mysql"]
+volumes:
+  dbdata:
