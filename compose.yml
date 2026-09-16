@@ -8,6 +8,7 @@ services:
       DATABASE_URL: "mysql://cake:secret@db/cake?encoding=utf8mb4&timezone=UTC"
   db:
     image: mysql:8.4
+    ports: ["3308:3306"]
     environment:
       MYSQL_DATABASE: cake
       MYSQL_USER: cake
