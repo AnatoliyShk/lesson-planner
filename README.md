@@ -1,58 +1,117 @@
-# CakePHP Application Skeleton
+# Lesson Planner
 
-![Build Status](https://github.com/cakephp/app/actions/workflows/ci.yml/badge.svg?branch=5.x)
-[![Total Downloads](https://img.shields.io/packagist/dt/cakephp/app.svg?style=flat-square)](https://packagist.org/packages/cakephp/app)
-[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat-square)](https://github.com/phpstan/phpstan)
+A CakePHP 5 app for scheduling lessons, assigning teachers, and keeping every
+session accounted for. Built on top of the CakePHP skeleton, with its own
+auth, admin, and scheduling features layered on.
 
-A skeleton for creating applications with [CakePHP](https://cakephp.org) 5.x.
+## Features
 
-The framework source code can be found here: [cakephp/cakephp](https://github.com/cakephp/cakephp).
+- **Auth** — registration, login/logout, password reset by email
+  (`cakephp/authentication`), with per-entity authorization policies
+  (`cakephp/authorization`).
+- **Roles** — every user has a `role` (`user` or `admin`). Admins get an
+  "Admin panel" nav link and access to `/admin`; the panel hosts the
+  Lessons/Teachers/Users management shortcuts.
+- **Lessons & teachers** — CRUD for lessons (title, description, time range,
+  status) assigned to teachers, who are linked to user accounts.
+- **Home page** — recent lessons list plus a full month calendar
+  ([FullCalendar](https://fullcalendar.io)) of all scheduled lessons.
+- **Design** — a small custom Swiss / International Typographic Style
+  stylesheet (`webroot/css/swiss.css`), used across all pages instead of the
+  skeleton's default Milligram CSS.
 
-## Installation
+## Tech stack
 
-1. Download [Composer](https://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Run `php composer.phar create-project --prefer-dist cakephp/app [app_name]`.
+- PHP 8.5, [CakePHP](https://cakephp.org) 5.4
+- MySQL 8.4
+- [Mailpit](https://github.com/axllent/mailpit) for catching dev emails
+  (password reset, welcome mail)
+- Docker Compose for local development
 
-If Composer is installed globally, run
+## Local setup (Docker)
+
+The app is designed to run via Docker Compose; you don't need PHP or MySQL
+installed locally.
+
+1. **Install PHP dependencies** (vendor/ is bind-mounted into the container,
+   so it needs to exist on the host first):
+
+   ```bash
+   composer install
+   ```
+
+2. **Configure Docker Compose.** Copy the example env file and fill in the
+   database credentials it asks for:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` and set `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD` (compose
+   refuses to start without them). This file only controls variable
+   substitution in `compose.yml` — it is not read by CakePHP itself.
+
+3. **Configure the app.** Copy the app's own env file and fill it in:
+
+   ```bash
+   cp config/.env.example config/.env
+   ```
+
+   At minimum set:
+   - `SECURITY_SALT` — a random string (e.g. `openssl rand -hex 32`), used to
+     sign CSRF tokens, form-tampering checks, and password-reset tokens.
+     Leaving the placeholder in place breaks CSRF/session handling.
+   - `APP_FULL_BASE_URL` — `http://localhost:8765` for local dev (must match
+     the port you expose the app on).
+
+   This file is read by CakePHP directly (via the dotenv loader in
+   `config/bootstrap.php`) and is separate from the root-level `.env` above.
+
+4. **Build and start the containers:**
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   This starts:
+   - `app` — the CakePHP app, served on `http://localhost:8765`
+   - `db` — MySQL, exposed on `localhost:3308` by default
+   - `mailpit` — SMTP catch-all with a web UI at `http://localhost:8025`
+
+5. **Run database migrations:**
+
+   ```bash
+   docker compose exec app bin/cake migrations migrate
+   ```
+
+6. Visit `http://localhost:8765`. Register an account, then promote it to
+   admin if needed:
+
+   ```bash
+   docker compose exec db mysql -u root -p'<MYSQL_ROOT_PASSWORD from .env>' cake \
+     -e "UPDATE users SET role = 'admin' WHERE email = 'you@example.com';"
+   ```
+
+## Useful commands
+
+Run these inside the `app` container (prefix with `docker compose exec app`):
 
 ```bash
-composer create-project --prefer-dist cakephp/app
+vendor/bin/phpunit           # run tests
+composer cs-check            # coding standards check
+composer cs-fix              # auto-fix coding standards
+bin/cake migrations migrate  # apply pending migrations
+bin/cake migrations status   # show migration status
 ```
 
-In case you want to use a custom app dir name (e.g. `/myapp/`):
+## Configuration reference
 
-```bash
-composer create-project --prefer-dist cakephp/app myapp
-```
-
-You can now either use your machine's webserver to view the default home page, or start
-up the built-in webserver with:
-
-```bash
-bin/cake server -p 8765
-```
-
-Then visit `http://localhost:8765` to see the welcome page.
-
-## Demo app
-
-Check out the [5.x-demo branch](https://github.com/cakephp/app/tree/5.x-demo), which contains demo migrations and a seeder.
-See the [README](https://github.com/cakephp/app/blob/5.x-demo/README.md) on how to get it running.
-
-## Update
-
-Since this skeleton is a starting point for your application and various files
-would have been modified as per your needs, there isn't a way to provide
-automated upgrades, so you have to do any updates manually.
-
-## Configuration
-
-Read and edit the environment specific `config/app_local.php` and set up the
-`'Datasources'` and any other configuration relevant for your application.
-Other environment agnostic settings can be changed in `config/app.php`.
-
-## Layout
-
-The app skeleton uses [Milligram](https://milligram.io/) (v1.3) minimalist CSS
-framework by default. You can, however, replace it with any other library or
-custom styles.
+- `config/app.php` — environment-agnostic defaults.
+- `config/app_local.php` (git-ignored, generated by `composer install`) —
+  local overrides, including the Datasources connection and Security salt
+  fallback.
+- `config/.env` (git-ignored) — environment variables for the app itself
+  (debug flag, security salt, full base URL, mail transport, etc.), loaded
+  via `josegonzalez/php-dotenv` in `config/bootstrap.php`.
+- `.env` (git-ignored, repo root) — environment variables for Docker Compose
+  only (ports, MySQL credentials).
