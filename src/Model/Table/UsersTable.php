@@ -11,8 +11,6 @@ use Cake\Validation\Validator;
 /**
  * Users Model
  *
- * @property \App\Model\Table\TeachersTable&\Cake\ORM\Association\HasOne $Teachers
- *
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method array<\App\Model\Entity\User> newEntities(array $data, array $options = [])
@@ -46,6 +44,11 @@ class UsersTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+
+        $this->hasMany('PasswordResetTokens', [
+            'foreignKey' => 'user_id',
+            'dependent' => true,
+        ]);
     }
 
     /**
@@ -69,16 +72,10 @@ class UsersTable extends Table
             ->notEmptyString('password');
 
         $validator
-            ->scalar('first_name')
-            ->maxLength('first_name', 100)
-            ->requirePresence('first_name', 'create')
-            ->notEmptyString('first_name');
-
-        $validator
-            ->scalar('last_name')
-            ->maxLength('last_name', 100)
-            ->requirePresence('last_name', 'create')
-            ->notEmptyString('last_name');
+            ->scalar('name')
+            ->maxLength('name', 100)
+            ->requirePresence('name', 'create')
+            ->notEmptyString('name');
 
         $validator
             ->scalar('role')
@@ -86,28 +83,52 @@ class UsersTable extends Table
             ->notEmptyString('role');
 
         $validator
-            ->scalar('timezone')
-            ->maxLength('timezone', 64)
-            ->notEmptyString('timezone');
-
-        $validator
-            ->scalar('locale')
-            ->maxLength('locale', 10)
-            ->notEmptyString('locale');
-
-        $validator
-            ->boolean('active')
-            ->notEmptyString('active');
-
-        $validator
-            ->boolean('email_verified')
-            ->notEmptyString('email_verified');
+            ->boolean('is_active')
+            ->notEmptyString('is_active');
 
         $validator
             ->dateTime('last_login')
             ->allowEmptyDateTime('last_login');
 
         return $validator;
+    }
+
+    /**
+     * Registration adds a confirmation field.
+     */
+    public function validationRegister(Validator $validator): Validator
+    {
+        $this->validationDefault($validator);
+
+        return $validator
+            ->requirePresence('password_confirm')
+            ->notEmptyString('password_confirm', 'Please confirm your password')
+            ->sameAs('password_confirm', 'password', 'Passwords do not match');
+    }
+
+    /**
+     * Password reset: only the password fields matter.
+     */
+    public function validationResetPassword(Validator $validator): Validator
+    {
+        return $validator
+            ->minLength('password', 12, 'Use at least 12 characters')
+            ->maxLength('password', 72)
+            ->requirePresence('password')
+            ->notEmptyString('password')
+            ->requirePresence('password_confirm')
+            ->notEmptyString('password_confirm')
+            ->sameAs('password_confirm', 'password', 'Passwords do not match');
+    }
+
+    /**
+     * Changing your own password requires the current one.
+     */
+    public function validationChangePassword(Validator $validator): Validator
+    {
+        return $this->validationResetPassword($validator)
+            ->requirePresence('current_password')
+            ->notEmptyString('current_password', 'Enter your current password');
     }
 
     /**

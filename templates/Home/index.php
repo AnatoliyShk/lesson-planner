@@ -35,7 +35,7 @@ $this->assign('title', 'Lesson Planner');
                         ) ?>
                         <?php if ($lesson->teacher && $lesson->teacher->user): ?>
                             <div class="swiss-list__meta">
-                                <?= h($lesson->teacher->user->first_name . ' ' . $lesson->teacher->user->last_name) ?>
+                                <?= h($lesson->teacher->user->name) ?>
                             </div>
                         <?php endif; ?>
                     </span>

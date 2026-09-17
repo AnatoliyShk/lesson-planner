@@ -23,24 +23,12 @@
                     <td><?= h($user->email) ?></td>
                 </tr>
                 <tr>
-                    <th><?= __('First Name') ?></th>
-                    <td><?= h($user->first_name) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Last Name') ?></th>
-                    <td><?= h($user->last_name) ?></td>
+                    <th><?= __('Name') ?></th>
+                    <td><?= h($user->name) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Role') ?></th>
                     <td><?= h($user->role) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Timezone') ?></th>
-                    <td><?= h($user->timezone) ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Locale') ?></th>
-                    <td><?= h($user->locale) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Id') ?></th>
@@ -60,11 +48,7 @@
                 </tr>
                 <tr>
                     <th><?= __('Active') ?></th>
-                    <td><?= $user->active ? __('Yes') : __('No'); ?></td>
-                </tr>
-                <tr>
-                    <th><?= __('Email Verified') ?></th>
-                    <td><?= $user->email_verified ? __('Yes') : __('No'); ?></td>
+                    <td><?= $user->is_active ? __('Yes') : __('No'); ?></td>
                 </tr>
             </table>
         </div>

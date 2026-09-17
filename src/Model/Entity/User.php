@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Entity;
 
+use Authentication\PasswordHasher\DefaultPasswordHasher;
 use Cake\ORM\Entity;
 
 /**
@@ -11,18 +12,12 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property string $email
  * @property string $password
- * @property string $first_name
- * @property string $last_name
+ * @property string $name
  * @property string $role
- * @property string $timezone
- * @property string $locale
- * @property bool $active
- * @property bool $email_verified
+ * @property bool $is_active
  * @property \Cake\I18n\DateTime|null $last_login
- * @property \Cake\I18n\DateTime $created
- * @property \Cake\I18n\DateTime $modified
- *
- * @property \App\Model\Entity\Teacher $teacher
+ * @property \Cake\I18n\DateTime|null $created
+ * @property \Cake\I18n\DateTime|null $modified
  */
 class User extends Entity
 {
@@ -38,17 +33,12 @@ class User extends Entity
     protected array $_accessible = [
         'email' => true,
         'password' => true,
-        'first_name' => true,
-        'last_name' => true,
+        'name' => true,
         'role' => true,
-        'timezone' => true,
-        'locale' => true,
-        'active' => true,
-        'email_verified' => true,
+        'is_active' => true,
         'last_login' => true,
         'created' => true,
         'modified' => true,
-        'teacher' => true,
     ];
 
     /**
@@ -59,4 +49,18 @@ class User extends Entity
     protected array $_hidden = [
         'password',
     ];
+
+    protected function _setPassword(string $password): ?string
+    {
+        if (strlen($password) === 0) {
+            return null;   // blank field on an edit form must not wipe the hash
+        }
+
+        return (new DefaultPasswordHasher())->hash($password);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 }

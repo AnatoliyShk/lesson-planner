@@ -50,11 +50,12 @@ class Application extends BaseApplication
         // Call parent to load bootstrap from files.
         parent::bootstrap();
 
-        // By default, does not allow fallback classes.
-        FactoryLocator::add(
-            'Table',
-            (new TableLocator())->allowFallbackClass(false),
-        );
+        if (PHP_SAPI !== 'cli') {
+            FactoryLocator::add(
+                'Table',
+                (new TableLocator())->allowFallbackClass(false),
+            );
+        }
     }
 
     /**
