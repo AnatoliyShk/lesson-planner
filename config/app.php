@@ -1,11 +1,17 @@
 <?php
 
 use Cake\Cache\Engine\FileEngine;
+use Cake\Core\Configure;
 use Cake\Database\Connection;
 use Cake\Database\Driver\Mysql;
 use Cake\Log\Engine\FileLog;
 use Cake\Mailer\Transport\MailTransport;
 use function Cake\Core\env;
+
+// Computed once so the 'Session' block below can use the real value: reading
+// it back via Configure::read('debug') here would see the pre-load state,
+// since this whole array isn't written to Configure until after it returns.
+$debug = filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN);
 
 return [
     /*
@@ -17,7 +23,7 @@ return [
      * Development Mode:
      * true: Errors and warnings shown.
      */
-    'debug' => filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN),
+    'debug' => $debug,
 
     /*
      * Configure basic information about the application.
@@ -430,6 +436,16 @@ return [
      */
     'Session' => [
         'defaults' => 'php',
+        'timeout' => 120,             // minutes of inactivity
+        'cookie' => 'MYSITE_SESS',    // don't advertise PHP
+        'ini' => [
+            'session.cookie_secure' => !$debug,      // set false for local http
+            'session.cookie_httponly' => true,
+            'session.cookie_samesite' => 'Lax',
+            'session.use_strict_mode' => 1,       // reject attacker-supplied session IDs
+            'session.sid_length' => 48,
+            'session.gc_maxlifetime' => 7200,
+        ],
     ],
 
     /**

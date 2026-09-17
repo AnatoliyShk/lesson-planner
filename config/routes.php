@@ -33,6 +33,8 @@ return function (RouteBuilder $routes): void {
 
         $builder->connect('/pages/*', 'Pages::display');
 
+        $builder->connect('/admin', ['controller' => 'Admin', 'action' => 'index'], ['_name' => 'admin']);
+
         $builder->scope('/', ['controller' => 'Users'], function (RouteBuilder $builder): void {
             $builder->connect('/login', ['action' => 'login'], ['_name' => 'login']);
             $builder->connect('/logout', ['action' => 'logout'], ['_name' => 'logout']);

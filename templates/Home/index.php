@@ -47,21 +47,3 @@ $this->assign('title', 'Lesson Planner');
         </ol>
     <?php endif; ?>
 </section>
-
-<section class="section">
-    <div class="section__title">
-        <span class="index">02</span>
-        <h2>Manage</h2>
-    </div>
-    <div class="grid">
-        <div class="col-4">
-            <?= $this->Html->link('Lessons →', ['controller' => 'Lessons', 'action' => 'index'], ['class' => 'button-swiss']) ?>
-        </div>
-        <div class="col-4">
-            <?= $this->Html->link('Teachers →', ['controller' => 'Teachers', 'action' => 'index'], ['class' => 'button-swiss']) ?>
-        </div>
-        <div class="col-4">
-            <?= $this->Html->link('Users →', ['controller' => 'Users', 'action' => 'index'], ['class' => 'button-swiss']) ?>
-        </div>
-    </div>
-</section>

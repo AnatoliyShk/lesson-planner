@@ -3,8 +3,12 @@
         <?= $this->Html->link('Lesson Planner', '/', ['class' => 'site-header__brand']) ?>
         <nav class="site-header__nav">
             <?= $this->Html->link('Home', ['controller' => 'Home', 'action' => 'index']) ?>
-            <?= $this->Html->link('Users', ['controller' => 'Users', 'action' => 'index']) ?>
-            <?php if ($this->request->getAttribute('identity')): ?>
+            <?php $identity = $this->request->getAttribute('identity'); ?>
+            <?php if ($identity): ?>
+                <?= $this->Html->link('Profile', ['_name' => 'profile']) ?>
+                <?php if ($identity->get('role') === 'admin'): ?>
+                    <?= $this->Html->link('Admin panel', ['_name' => 'admin']) ?>
+                <?php endif; ?>
                 <?= $this->Form->postLink('Log out', ['_name' => 'logout']) ?>
             <?php else: ?>
                 <?= $this->Html->link('Log in', ['_name' => 'login']) ?>
