@@ -125,6 +125,18 @@ return [
          * in connections.
          * Duration will be set to '+2 minutes' in bootstrap.php when debug = true
          */
+        /*
+         * Counters for RateLimitMiddleware on login/register/forgotPassword.
+         * Duration must outlast the 900 second window set in Application.
+         */
+        'rate_limit' => [
+            'className' => FileEngine::class,
+            'prefix' => 'myapp_rate_limit_',
+            'path' => CACHE . 'rate_limit' . DS,
+            'duration' => '+20 minutes',
+            'url' => env('CACHE_RATE_LIMIT_URL', null),
+        ],
+
         '_cake_model_' => [
             'className' => FileEngine::class,
             'prefix' => 'myapp_cake_model_',
@@ -446,7 +458,8 @@ return [
     'DebugKit' => [
         'forceEnable' => filter_var(env('DEBUG_KIT_FORCE_ENABLE', false), FILTER_VALIDATE_BOOLEAN),
         'safeTld' => env('DEBUG_KIT_SAFE_TLD', null),
-        'ignoreAuthorization' => env('DEBUG_KIT_IGNORE_AUTHORIZATION', false),
+        // DebugKit only loads in debug mode; its toolbar requests never run policies.
+        'ignoreAuthorization' => filter_var(env('DEBUG_KIT_IGNORE_AUTHORIZATION', true), FILTER_VALIDATE_BOOLEAN),
     ],
 
     /**

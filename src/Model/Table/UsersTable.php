@@ -52,6 +52,17 @@ class UsersTable extends Table
     }
 
     /**
+     * Finds users that are allowed to log in.
+     *
+     * @param \Cake\ORM\Query\SelectQuery $query Query to modify.
+     * @return \Cake\ORM\Query\SelectQuery
+     */
+    public function findActive(SelectQuery $query): SelectQuery
+    {
+        return $query->where([$this->aliasField('is_active') => true]);
+    }
+
+    /**
      * Default validation rules.
      *
      * @param \Cake\Validation\Validator $validator Validator instance.

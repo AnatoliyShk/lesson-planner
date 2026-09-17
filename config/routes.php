@@ -33,6 +33,19 @@ return function (RouteBuilder $routes): void {
 
         $builder->connect('/pages/*', 'Pages::display');
 
+        $builder->scope('/', ['controller' => 'Users'], function (RouteBuilder $builder): void {
+            $builder->connect('/login', ['action' => 'login'], ['_name' => 'login']);
+            $builder->connect('/logout', ['action' => 'logout'], ['_name' => 'logout']);
+            $builder->connect('/register', ['action' => 'register'], ['_name' => 'register']);
+            $builder->connect('/profile', ['action' => 'profile'], ['_name' => 'profile']);
+            $builder->connect('/change-password', ['action' => 'changePassword']);
+            $builder->connect('/forgot-password', ['action' => 'forgotPassword'], ['_name' => 'forgotPassword']);
+
+            $builder->connect('/reset-password/{token}', ['action' => 'resetPassword'])
+                ->setPass(['token'])
+                ->setPatterns(['token' => '[a-f0-9]{64}']);
+        });
+
         $builder->fallbacks();
     });
 
