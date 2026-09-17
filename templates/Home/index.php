@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var iterable<\App\Model\Entity\Lesson> $recent
+ * @var array<array<string, string>> $calendarEvents
  */
 $this->assign('title', 'Lesson Planner');
 ?>
@@ -47,3 +48,32 @@ $this->assign('title', 'Lesson Planner');
         </ol>
     <?php endif; ?>
 </section>
+
+<section class="section">
+    <div class="section__title">
+        <span class="index">02</span>
+        <h2>Schedule</h2>
+    </div>
+
+    <div id="calendar"></div>
+</section>
+
+<?php $this->start('script'); ?>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listWeek',
+            },
+            height: 'auto',
+            events: <?= json_encode($calendarEvents) ?>,
+        });
+        calendar.render();
+    });
+</script>
+<?php $this->end(); ?>

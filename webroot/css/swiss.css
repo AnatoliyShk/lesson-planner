@@ -361,3 +361,95 @@ main {
     font-size: 0.9rem;
     color: var(--color-muted);
 }
+
+/* Calendar (FullCalendar) --------------------------------------------------- */
+
+#calendar {
+    --fc-border-color: var(--color-border);
+    --fc-page-bg-color: var(--color-bg);
+    --fc-neutral-bg-color: var(--color-border);
+    --fc-list-event-hover-bg-color: var(--color-border);
+    --fc-today-bg-color: transparent;
+    font-family: inherit;
+}
+
+#calendar .fc-toolbar-title {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-size: 1.4rem;
+}
+
+#calendar .fc-button {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border: 2px solid var(--color-fg);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    border-radius: 0;
+    padding: 0.5rem 0.85rem;
+    box-shadow: none;
+}
+
+#calendar .fc-button:hover,
+#calendar .fc-button:not(:disabled):active {
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+#calendar .fc-button-primary:not(:disabled).fc-button-active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-bg);
+}
+
+#calendar .fc-button:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+#calendar .fc-daygrid-day.fc-day-today,
+#calendar .fc-timegrid-col.fc-day-today {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+
+#calendar .fc-col-header-cell {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    background: transparent;
+}
+
+#calendar .fc-daygrid-day-number,
+#calendar .fc-timegrid-slot-label-cube {
+    color: var(--color-fg);
+}
+
+#calendar .fc-event {
+    background: var(--color-fg);
+    border: 2px solid var(--color-fg);
+    color: var(--color-bg);
+    border-radius: 0;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+}
+
+#calendar .fc-event:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+#calendar .fc-list-event:hover td {
+    background: var(--color-border);
+}
+
+#calendar a {
+    border-bottom: none;
+}

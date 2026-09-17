@@ -17,7 +17,7 @@ class TeachersController extends AppController
      */
     public function index()
     {
-        $query = $this->Teachers->find()
+        $query = $this->Authorization->applyScope($this->Teachers->find())
             ->contain(['Users']);
         $teachers = $this->paginate($query);
 
@@ -34,6 +34,7 @@ class TeachersController extends AppController
     public function view($id = null)
     {
         $teacher = $this->Teachers->get($id, contain: ['Users', 'Lessons']);
+        $this->Authorization->authorize($teacher);
         $this->set(compact('teacher'));
     }
 
@@ -45,6 +46,7 @@ class TeachersController extends AppController
     public function add()
     {
         $teacher = $this->Teachers->newEmptyEntity();
+        $this->Authorization->authorize($teacher);
         if ($this->request->is('post')) {
             $teacher = $this->Teachers->patchEntity($teacher, $this->request->getData());
             if ($this->Teachers->save($teacher)) {
@@ -68,6 +70,7 @@ class TeachersController extends AppController
     public function edit($id = null)
     {
         $teacher = $this->Teachers->get($id, contain: []);
+        $this->Authorization->authorize($teacher);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $teacher = $this->Teachers->patchEntity($teacher, $this->request->getData());
             if ($this->Teachers->save($teacher)) {
@@ -92,6 +95,7 @@ class TeachersController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $teacher = $this->Teachers->get($id);
+        $this->Authorization->authorize($teacher);
         if ($this->Teachers->delete($teacher)) {
             $this->Flash->success(__('The teacher has been deleted.'));
         } else {
