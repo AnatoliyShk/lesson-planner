@@ -15,5 +15,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
     volumes: ["dbdata:/var/lib/mysql"]
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"      # web UI
 volumes:
   dbdata:

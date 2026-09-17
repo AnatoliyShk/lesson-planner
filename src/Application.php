@@ -95,8 +95,9 @@ class Application extends BaseApplication implements
             'limit' => 10,
             'window' => 900,
             'cache' => 'rate_limit',
+            // Only count form submissions; viewing the forms must not use up attempts.
             'skipCheck' => function ($request) {
-                return !in_array(
+                return !$request->is('post') || !in_array(
                     $request->getParam('action'),
                     ['login', 'register', 'forgotPassword'],
                     true

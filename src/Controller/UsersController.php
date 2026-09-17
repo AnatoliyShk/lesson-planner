@@ -1,100 +1,257 @@
 <?php
+// src/Controller/UsersController.php
 declare(strict_types=1);
 
 namespace App\Controller;
 
+use Authentication\PasswordHasher\DefaultPasswordHasher;
+use Cake\Event\EventInterface;
+use Cake\Http\Response;
+use Cake\I18n\DateTime;
+use Cake\Mailer\MailerAwareTrait;
+
 /**
- * Users Controller
- *
  * @property \App\Model\Table\UsersTable $Users
  */
 class UsersController extends AppController
 {
-    /**
-     * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
-     */
-    public function index()
-    {
-        $query = $this->Users->find();
-        $users = $this->paginate($query);
+    use MailerAwareTrait;
 
-        $this->set(compact('users'));
+    public function beforeFilter(EventInterface $event): void
+    {
+        parent::beforeFilter($event);
+
+        $this->Authentication->addUnauthenticatedActions([
+            'login', 'register', 'forgotPassword', 'resetPassword',
+        ]);
     }
 
     /**
-     * View method
-     *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     * GET  /login   — show form
+     * POST /login   — the Form authenticator has already run in middleware
      */
-    public function view($id = null)
+    public function login(): ?Response
     {
-        $user = $this->Users->get($id, contain: []);
-        $this->set(compact('user'));
-    }
+        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['get', 'post']);
+        $this->viewBuilder()->setLayout('auth');
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $user = $this->Users->newEmptyEntity();
+        $result = $this->Authentication->getResult();
+
+        if ($result->isValid()) {
+            // Session fixation defence: new session ID on privilege change.
+            $this->request->getSession()->renew();
+
+            $user = $this->Authentication->getIdentity()->getOriginalData();
+            $this->Users->updateAll(['last_login' => new DateTime()], ['id' => $user->id]);
+
+            return $this->redirect($this->Authentication->getLoginRedirect() ?? '/');
+        }
+
         if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+            // Deliberately identical for unknown email and wrong password,
+            // so the form cannot be used to enumerate registered addresses.
+            $this->Flash->error('Invalid email or password');
         }
-        $this->set(compact('user'));
+
+        return null;
     }
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function edit($id = null)
+    public function logout(): ?Response
     {
-        $user = $this->Users->get($id, contain: []);
+        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['post']);   // GET logout is CSRF-abusable
+
+        $this->Authentication->logout();
+        $this->request->getSession()->destroy();
+        $this->Flash->success('You have been logged out');
+
+        return $this->redirect('/login');
+    }
+
+    public function register(): ?Response
+    {
+        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['get', 'post']);
+        $this->viewBuilder()->setLayout('auth');
+
+        if ($this->Authentication->getIdentity()) {
+            return $this->redirect('/');
+        }
+
+        $user = $this->Users->newEmptyEntity();
+
+        if ($this->request->is('post')) {
+            $user = $this->Users->patchEntity(
+                $user,
+                $this->request->getData(),
+                ['validate' => 'register']
+            );
+
+            if ($this->Users->save($user)) {
+                $this->request->getSession()->renew();
+                $this->Authentication->setIdentity($user);
+
+                try {
+                    $this->getMailer('User')->send('welcome', [$user]);
+                } catch (\Throwable $e) {
+                    // Never fail a registration because SMTP is down.
+                    $this->log('Welcome email failed: ' . $e->getMessage(), 'warning');
+                }
+
+                $this->Flash->success('Welcome, ' . $user->name . '!');
+
+                return $this->redirect('/');
+            }
+
+            $this->Flash->error('Please correct the errors below');
+        }
+
+        $this->set(compact('user'));
+
+        return null;
+    }
+
+    public function forgotPassword(): ?Response
+    {
+        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['get', 'post']);
+        $this->viewBuilder()->setLayout('auth');
+
+        if ($this->request->is('post')) {
+            $email = trim((string)$this->request->getData('email'));
+
+            $user = $this->Users->find('active')
+                ->where(['Users.email' => $email])
+                ->first();
+
+            if ($user) {
+                $tokens = $this->fetchTable('PasswordResetTokens');
+                $raw = $tokens->issueFor($user->id, 60);
+
+                try {
+                    $this->getMailer('User')->send('resetPassword', [$user, $raw]);
+                } catch (\Throwable $e) {
+                    $this->log('Reset email failed: ' . $e->getMessage(), 'error');
+                }
+            }
+
+            // SAME message whether or not the account exists.
+            $this->Flash->success(
+                'If that address is registered, a reset link is on its way.'
+            );
+
+            return $this->redirect('/login');
+        }
+
+        return null;
+    }
+
+    public function resetPassword(string $token): ?Response
+    {
+        $this->Authorization->skipAuthorization();
+        $this->request->allowMethod(['get', 'post']);
+        $this->viewBuilder()->setLayout('auth');
+
+        $tokens = $this->fetchTable('PasswordResetTokens');
+        $record = $tokens->findByRawToken($token);
+
+        if (!$record) {
+            $this->Flash->error('That reset link is invalid or has expired.');
+
+            return $this->redirect('/forgot-password');
+        }
+
+        $user = $record->user;
+
+        if ($this->request->is('post')) {
+            $user = $this->Users->patchEntity(
+                $user,
+                $this->request->getData(),
+                ['validate' => 'resetPassword']
+            );
+
+            if ($this->Users->save($user)) {
+                $tokens->consume($record);
+
+                // Any other session using this account is now stale.
+                $this->request->getSession()->renew();
+                $this->Flash->success('Your password has been changed. Please log in.');
+
+                return $this->redirect('/login');
+            }
+
+            $this->Flash->error('Please correct the errors below');
+        }
+
+        $this->set(compact('user', 'token'));
+
+        return null;
+    }
+
+    public function profile(): ?Response
+    {
+        $identity = $this->Authentication->getIdentity();
+        $user = $this->Users->get($identity->getIdentifier());
+
+        $this->Authorization->authorize($user, 'edit');
+
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
+            // Only these two fields, whatever else was posted.
+            $user = $this->Users->patchEntity($user, [
+                'name' => $this->request->getData('name'),
+                'email' => $this->request->getData('email'),
+            ]);
 
-                return $this->redirect(['action' => 'index']);
+            if ($this->Users->save($user)) {
+                $this->Flash->success('Profile updated');
+
+                return $this->redirect('/profile');
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+
+            $this->Flash->error('Please correct the errors below');
         }
+
         $this->set(compact('user'));
+
+        return null;
     }
 
-    /**
-     * Delete method
-     *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
+    public function changePassword(): ?Response
     {
-        $this->request->allowMethod(['post', 'delete']);
-        $user = $this->Users->get($id);
-        if ($this->Users->delete($user)) {
-            $this->Flash->success(__('The user has been deleted.'));
-        } else {
-            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+        $identity = $this->Authentication->getIdentity();
+        $user = $this->Users->get($identity->getIdentifier());
+
+        $this->Authorization->authorize($user, 'edit');
+
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $current = (string)$this->request->getData('current_password');
+
+            if (!(new DefaultPasswordHasher())->check($current, $user->password)) {
+                $this->Flash->error('Your current password is incorrect');
+                $this->set(compact('user'));
+
+                return null;
+            }
+
+            $user = $this->Users->patchEntity(
+                $user,
+                $this->request->getData(),
+                ['validate' => 'changePassword']
+            );
+
+            if ($this->Users->save($user)) {
+                $this->request->getSession()->renew();
+                $this->Flash->success('Password changed');
+
+                return $this->redirect('/profile');
+            }
+
+            $this->Flash->error('Please correct the errors below');
         }
 
-        return $this->redirect(['action' => 'index']);
+        $this->set(compact('user'));
+
+        return null;
     }
 }
