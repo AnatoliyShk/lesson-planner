@@ -49,7 +49,7 @@ class LessonsController extends AppController
      */
     public function view($id = null)
     {
-        $lesson = $this->Lessons->get($id, contain: ['Teachers']);
+        $lesson = $this->Lessons->get($id, contain: ['Teachers' => ['Users']]);
         $this->set(compact('lesson'));
     }
 

@@ -303,6 +303,197 @@ main {
     margin-top: 0.4rem;
 }
 
+.button-swiss--ghost {
+    background: transparent;
+    color: var(--color-fg);
+}
+
+.button-swiss--ghost:hover {
+    color: var(--color-bg);
+}
+
+.button-swiss--danger {
+    background: transparent;
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+.button-swiss--danger:hover {
+    color: var(--color-bg);
+}
+
+/* Lesson detail ------------------------------------------------------------ */
+
+/* Lesson titles are full sentences ("<teacher> <date> with <student>"), so
+   the hero's poster-size h1 is scaled down to keep them to a few lines. */
+.lesson-hero h1 {
+    font-size: clamp(1.75rem, 4.5vw, 3.25rem);
+    line-height: 1;
+    max-width: 22ch;
+    margin-bottom: 0.75rem;
+}
+
+.lesson-hero .hero__lede {
+    margin: 0 0 1.75rem;
+}
+
+.lesson-hero .hero__lede a {
+    color: var(--color-fg);
+    font-weight: 700;
+    border-bottom-color: var(--color-fg);
+}
+
+.lesson-hero .hero__lede a:hover {
+    border-bottom-color: var(--color-accent);
+}
+
+.lesson-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Delete sits apart from the everyday actions, at the far right. */
+.lesson-actions__delete {
+    margin-left: auto;
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: 2fr repeat(3, 1fr);
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.25rem 1.25rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.fact + .fact {
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--color-border);
+}
+
+.fact__label,
+.detail-list dt {
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+}
+
+.fact__value {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.fact__value--accent {
+    color: var(--color-accent);
+}
+
+.detail-list {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    margin: 0;
+}
+
+.detail-list dt,
+.detail-list dd {
+    margin: 0;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detail-list dt {
+    align-self: stretch;
+    padding-top: 1.2rem;
+}
+
+.detail-list dd {
+    font-weight: 700;
+}
+
+.detail-list dd a {
+    border-bottom-color: var(--color-fg);
+}
+
+.detail-list dd a:hover {
+    border-bottom-color: var(--color-accent);
+}
+
+.detail-list__muted {
+    color: var(--color-muted);
+    font-weight: 400;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid var(--color-fg);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+}
+
+.lesson-notes {
+    border-left: 4px solid var(--color-accent);
+    padding: 0.25rem 0 0.25rem 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.lesson-notes p {
+    margin: 0 0 1rem;
+}
+
+.lesson-notes p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+    .facts {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .fact--wide,
+    .fact:last-child {
+        grid-column: span 2;
+    }
+
+    /* Two columns: no left rule on the first cell of each row. */
+    .fact + .fact {
+        padding-left: 1.25rem;
+    }
+
+    .fact:nth-child(even) {
+        padding-left: 0;
+        border-left: none;
+    }
+
+    .detail-list {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-list dt {
+        padding: 1rem 0 0.25rem;
+        border-bottom: none;
+    }
+
+    .detail-list dd {
+        padding-top: 0;
+    }
+
+    .lesson-actions__delete {
+        margin-left: 0;
+    }
+}
+
 /* Forms -------------------------------------------------------------------- */
 
 .auth {
