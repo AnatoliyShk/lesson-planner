@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Event\EventInterface;
+
 /**
  * Lessons Controller
  *
@@ -10,6 +12,20 @@ namespace App\Controller;
  */
 class LessonsController extends AppController
 {
+    /**
+     * There's no LessonPolicy: access to this controller is gated at the
+     * routing layer (e.g. the Admin panel), not per-entity.
+     *
+     * @param \Cake\Event\EventInterface<\Cake\Controller\Controller> $event Event.
+     * @return void
+     */
+    public function beforeFilter(EventInterface $event): void
+    {
+        parent::beforeFilter($event);
+
+        $this->Authorization->skipAuthorization();
+    }
+
     /**
      * Index method
      *

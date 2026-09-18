@@ -84,7 +84,21 @@ installed locally.
    docker compose exec app bin/cake migrations migrate
    ```
 
-6. Visit `http://localhost:8765`. Register an account, then promote it to
+6. **(Optional) seed sample teachers and lessons:**
+
+   ```bash
+   docker compose exec app bin/cake seeds run Teachers
+   docker compose exec app bin/cake seeds run Lessons
+   ```
+
+   `Teachers` creates 5 teachers (each with a backing user account, password
+   `Password123!`) so the Home page and Lessons/Teachers admin views have
+   sample data. `Lessons` adds 3 student accounts (same password) and 4
+   one-hour lessons per teacher on weekdays of the current and next week; it
+   runs `Teachers` first if needed. Both are safe to re-run with `--force` —
+   existing rows are skipped.
+
+7. Visit `http://localhost:8765`. Register an account, then promote it to
    admin if needed:
 
    ```bash

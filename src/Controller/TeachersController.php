@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cake\Collection\CollectionInterface;
+
 /**
  * Teachers Controller
  *
@@ -82,6 +84,53 @@ class TeachersController extends AppController
         }
         $users = $this->Teachers->Users->find('list', limit: 200)->all();
         $this->set(compact('teacher', 'users'));
+    }
+
+    /**
+     * Reserve method
+     *
+     * Lets a signed-in user pick a time slot on this teacher's calendar and
+     * book a new lesson with them. Open to any authenticated user, not
+     * gated by TeacherPolicy.
+     *
+     * @param string|null $id Teacher id.
+     * @return \Cake\Http\Response|null|void Redirects on successful reservation, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When the teacher is not found.
+     */
+    public function reserve($id = null)
+    {
+        $this->Authorization->skipAuthorization();
+
+        $teacher = $this->Teachers->get($id, contain: ['Users']);
+        $lesson = $this->Teachers->Lessons->newEmptyEntity();
+
+        if ($this->request->is('post')) {
+            /** @var \App\Model\Entity\User $reservedBy */
+            $reservedBy = $this->Authentication->getIdentity()->getOriginalData();
+            $lesson = $this->Teachers->Lessons->reserve($teacher, $reservedBy, $this->request->getData());
+
+            if (!$lesson->isNew()) {
+                $this->Flash->success(__('Lesson reserved with {0}.', $teacher->user->name));
+
+                return $this->redirect(['controller' => 'Home', 'action' => 'index']);
+            }
+            $this->Flash->error(__('Could not reserve that time. Please, try again.'));
+        }
+
+        $busyEvents = $this->Teachers->Lessons->find()
+            ->where(['teacher_id' => $teacher->id])
+            ->formatResults(function (CollectionInterface $lessons) {
+                return $lessons->map(fn($lesson) => [
+                    'title' => 'Booked',
+                    'start' => $lesson->start_time->toIso8601String(),
+                    'end' => $lesson->end_time->toIso8601String(),
+                    'display' => 'background',
+                ]);
+            })
+            ->all()
+            ->toArray();
+
+        $this->set(compact('teacher', 'lesson', 'busyEvents'));
     }
 
     /**

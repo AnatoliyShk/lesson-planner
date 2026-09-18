@@ -9,6 +9,7 @@
     --color-border: #e5e5e5;
     --color-muted: #888888;
     --color-accent: #e30613;
+    --color-accent-soft: rgba(227, 6, 19, 0.3);
 }
 
 :root[data-theme="dark"] {
@@ -17,6 +18,7 @@
     --color-border: #333333;
     --color-muted: #999999;
     --color-accent: #ff4b4b;
+    --color-accent-soft: rgba(255, 75, 75, 0.3);
 }
 
 * {
@@ -285,6 +287,22 @@ main {
     border-color: var(--color-accent);
 }
 
+.button-swiss:disabled {
+    background: var(--color-bg);
+    color: var(--color-muted);
+    border-color: var(--color-border);
+    cursor: not-allowed;
+}
+
+.button-swiss--sm {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.7rem;
+}
+
+.swiss-list__item .button-swiss--sm {
+    margin-top: 0.4rem;
+}
+
 /* Forms -------------------------------------------------------------------- */
 
 .auth {
@@ -309,7 +327,8 @@ main {
     letter-spacing: 0.05em;
 }
 
-.form-swiss input {
+.form-swiss input,
+.form-swiss textarea {
     width: 100%;
     padding: 0.7rem 0.8rem;
     font: inherit;
@@ -319,7 +338,13 @@ main {
     border-radius: 0;
 }
 
-.form-swiss input:focus-visible {
+.form-swiss textarea {
+    resize: vertical;
+    min-height: 6rem;
+}
+
+.form-swiss input:focus-visible,
+.form-swiss textarea:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
 }
@@ -362,6 +387,35 @@ main {
     color: var(--color-muted);
 }
 
+/* Reservation picker --------------------------------------------------------- */
+
+.reserve-picked {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--color-fg);
+    font-size: 0.85rem;
+}
+
+.reserve-picked__label {
+    display: block;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    margin-bottom: 0.3rem;
+}
+
+.reserve-picked__value {
+    font-weight: 700;
+}
+
+.reserve-picked__value--empty {
+    color: var(--color-muted);
+    font-weight: 400;
+    text-transform: none;
+}
+
 /* Calendar (FullCalendar) --------------------------------------------------- */
 
 #calendar {
@@ -370,6 +424,14 @@ main {
     --fc-neutral-bg-color: var(--color-border);
     --fc-list-event-hover-bg-color: var(--color-border);
     --fc-today-bg-color: transparent;
+    /* The library paints event titles/times with its own hard-coded white,
+       which vanishes on the light event fill in dark mode. */
+    --fc-event-bg-color: var(--color-fg);
+    --fc-event-border-color: var(--color-fg);
+    --fc-event-text-color: var(--color-bg);
+    /* Selection highlight left behind after picking a time range; the
+       library default is a very pale, low-contrast blue. */
+    --fc-highlight-color: var(--color-accent-soft);
     font-family: inherit;
 }
 
@@ -441,9 +503,37 @@ main {
     letter-spacing: 0.02em;
 }
 
+#calendar .fc-event .fc-event-main,
+#calendar .fc-event .fc-event-title,
+#calendar .fc-event .fc-event-time,
+#calendar .fc-event .fc-list-event-title a {
+    color: inherit;
+}
+
 #calendar .fc-event:hover {
     background: var(--color-accent);
     border-color: var(--color-accent);
+    color: var(--color-bg);
+}
+
+/* Busy/background events (e.g. already-booked slots on the reserve page):
+   the library default is a near-white translucent fill, which washes out
+   against the page background and makes the label unreadable. Reserved time
+   is always shown in the accent red, in both themes. */
+#calendar .fc-bg-event,
+#calendar .fc-bg-event:hover {
+    background: var(--color-accent);
+    opacity: 1;
+}
+
+#calendar .fc-bg-event .fc-event-title {
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    margin: 0.4rem;
 }
 
 #calendar .fc-list-event:hover td {

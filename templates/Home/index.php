@@ -2,6 +2,7 @@
 /**
  * @var \App\View\AppView $this
  * @var iterable<\App\Model\Entity\Lesson> $recent
+ * @var iterable<\App\Model\Entity\Teacher> $teachers
  * @var array<array<string, string>> $calendarEvents
  */
 $this->assign('title', 'Lesson Planner');
@@ -21,20 +22,20 @@ $this->assign('title', 'Lesson Planner');
         <h2>Recent lessons</h2>
     </div>
 
-    <?php if ($recent->isEmpty()): ?>
+    <?php if ($recent->isEmpty()) : ?>
         <p class="empty-state">No lessons scheduled yet.</p>
-    <?php else: ?>
+    <?php else : ?>
         <ol class="swiss-list">
-            <?php foreach ($recent as $i => $lesson): ?>
+            <?php foreach ($recent as $i => $lesson) : ?>
                 <li class="swiss-list__item">
                     <span class="swiss-list__index"><?= sprintf('%02d', $i + 1) ?></span>
                     <span>
                         <?= $this->Html->link(
                             h($lesson->title),
                             ['controller' => 'Lessons', 'action' => 'view', $lesson->id],
-                            ['class' => 'swiss-list__title']
+                            ['class' => 'swiss-list__title'],
                         ) ?>
-                        <?php if ($lesson->teacher && $lesson->teacher->user): ?>
+                        <?php if ($lesson->teacher && $lesson->teacher->user) : ?>
                             <div class="swiss-list__meta">
                                 <?= h($lesson->teacher->user->name) ?>
                             </div>
@@ -52,6 +53,39 @@ $this->assign('title', 'Lesson Planner');
 <section class="section">
     <div class="section__title">
         <span class="index">02</span>
+        <h2>Teachers</h2>
+    </div>
+
+    <?php if ($teachers->isEmpty()) : ?>
+        <p class="empty-state">No teachers yet.</p>
+    <?php else : ?>
+        <ol class="swiss-list">
+            <?php foreach ($teachers as $i => $teacher) : ?>
+                <li class="swiss-list__item">
+                    <span class="swiss-list__index"><?= sprintf('%02d', $i + 1) ?></span>
+                    <span>
+                        <span class="swiss-list__title"><?= h($teacher->user->name) ?></span>
+                        <?php if ($teacher->bio) : ?>
+                            <div class="swiss-list__meta"><?= h($teacher->bio) ?></div>
+                        <?php endif; ?>
+                    </span>
+                    <span class="swiss-list__meta">
+                        <?= h($teacher->user->email) ?>
+                        <?= $this->Html->link(
+                            'Reserve time',
+                            ['controller' => 'Teachers', 'action' => 'reserve', $teacher->id],
+                            ['class' => 'button-swiss button-swiss--sm'],
+                        ) ?>
+                    </span>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    <?php endif; ?>
+</section>
+
+<section class="section">
+    <div class="section__title">
+        <span class="index">03</span>
         <h2>Schedule</h2>
     </div>
 

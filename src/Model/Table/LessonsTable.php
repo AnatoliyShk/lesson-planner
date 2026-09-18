@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Model\Entity\Lesson;
+use App\Model\Entity\Teacher;
+use App\Model\Entity\User;
+use Cake\I18n\DateTime;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
@@ -31,6 +35,12 @@ use Cake\Validation\Validator;
  */
 class LessonsTable extends Table
 {
+    /**
+     * Lessons have a required `course_id` with no backing Courses feature yet;
+     * reservations use this placeholder.
+     */
+    public const DEFAULT_COURSE_ID = 1;
+
     /**
      * Initialize method
      *
@@ -96,6 +106,44 @@ class LessonsTable extends Table
             ->allowEmptyString('status');
 
         return $validator;
+    }
+
+    /**
+     * Reserve a lesson slot with a teacher.
+     *
+     * Builds and saves a new lesson entity for the given teacher from the
+     * submitted reservation data (description, start_time, end_time). The
+     * title is generated: "<teacher> <date> with <reserving user>".
+     * On failure the returned entity carries the validation errors.
+     *
+     * @param \App\Model\Entity\Teacher $teacher Teacher to reserve with (with Users contained).
+     * @param \App\Model\Entity\User $reservedBy User making the reservation.
+     * @param array $data Reservation form data.
+     * @return \App\Model\Entity\Lesson
+     */
+    public function reserve(Teacher $teacher, User $reservedBy, array $data): Lesson
+    {
+        $lesson = $this->newEntity([
+            'course_id' => self::DEFAULT_COURSE_ID,
+            'teacher_id' => $teacher->id,
+            'description' => $data['description'] ?? null,
+            'start_time' => $data['start_time'] ?? null,
+            'end_time' => $data['end_time'] ?? null,
+        ]);
+
+        // Left empty when start_time is missing/invalid; validation reports that.
+        if ($lesson->start_time instanceof DateTime) {
+            $lesson->title = sprintf(
+                '%s %s with %s',
+                $teacher->user->name,
+                $lesson->start_time->i18nFormat('d MMM yyyy, HH:mm'),
+                $reservedBy->name,
+            );
+        }
+
+        $this->save($lesson);
+
+        return $lesson;
     }
 
     /**
