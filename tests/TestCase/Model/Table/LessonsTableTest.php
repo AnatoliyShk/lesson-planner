@@ -114,6 +114,33 @@ class LessonsTableTest extends TestCase
     }
 
     /**
+     * relatedTo finds lessons the user attends or teaches.
+     *
+     * @return void
+     * @link \App\Model\Table\LessonsTable::findRelatedTo()
+     */
+    public function testFindRelatedTo(): void
+    {
+        $related = fn(int $userId) => $this->Lessons->find('relatedTo', userId: $userId)
+            ->all()->extract('id')->toList();
+
+        // User 1 teaches lesson 1: still related after the student link is removed.
+        $this->Lessons->Students->junction()->deleteAll([]);
+        $this->assertSame([1], $related(1));
+
+        // A user who only attends lesson 1.
+        $student = $this->Lessons->Students->newEntity(
+            ['email' => 'student@example.test', 'password' => 'secret', 'name' => 'Student'],
+            ['validate' => false],
+        );
+        $this->Lessons->Students->saveOrFail($student, ['checkRules' => false]);
+        $this->assertSame([], $related($student->id));
+
+        $this->Lessons->Students->link($this->Lessons->get(1), [$student]);
+        $this->assertSame([1], $related($student->id));
+    }
+
+    /**
      * Test buildRules method
      *
      * @return void

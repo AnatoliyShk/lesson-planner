@@ -137,6 +137,29 @@ class LessonsTable extends Table
     }
 
     /**
+     * Find lessons related to a user: ones they attend as a student and
+     * ones they teach.
+     *
+     * @param \Cake\ORM\Query\SelectQuery $query Query.
+     * @param int $userId User id.
+     * @return \Cake\ORM\Query\SelectQuery
+     */
+    public function findRelatedTo(SelectQuery $query, int $userId): SelectQuery
+    {
+        $attendedIds = $this->Students->junction()->find()
+            ->select(['lesson_id'])
+            ->where(['user_id' => $userId]);
+        $taughtByIds = $this->Teachers->find()
+            ->select(['id'])
+            ->where(['user_id' => $userId]);
+
+        return $query->where(['OR' => [
+            $this->aliasField('id') . ' IN' => $attendedIds,
+            $this->aliasField('teacher_id') . ' IN' => $taughtByIds,
+        ]]);
+    }
+
+    /**
      * Reserve a lesson slot with a teacher.
      *
      * Builds and saves a new lesson entity for the given teacher from the

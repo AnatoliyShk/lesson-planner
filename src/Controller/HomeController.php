@@ -31,7 +31,14 @@ class HomeController extends AppController
     {
         $this->Authorization->skipAuthorization();
 
-        $calendarEvents = $this->fetchTable('Lessons')->find()
+        $identity = $this->Authentication->getIdentity();
+        $lessons = $this->fetchTable('Lessons');
+        // Only lessons the logged-in user attends or teaches; guests see none.
+        $userLessons = fn() => $identity
+            ? $lessons->find('relatedTo', userId: (int)$identity->getIdentifier())
+            : $lessons->find()->where(['1 = 0']);
+
+        $calendarEvents = $userLessons()
             ->contain(['Teachers' => ['Users']])
             ->orderBy(['Lessons.start_time' => 'ASC'])
             ->limit(200)
@@ -60,12 +67,13 @@ class HomeController extends AppController
             ->all();
 
         $this->set([
-            'recent' => $this->fetchTable('Lessons')->find()
+            'recent' => $userLessons()
                 ->contain(['Teachers' => ['Users']])
                 ->orderBy(['Lessons.created' => 'DESC'])
                 ->limit(4)->all(),
             'teachers' => $teachers,
             'calendarEvents' => $calendarEvents,
+            'loggedIn' => $identity !== null,
         ]);
     }
 }
