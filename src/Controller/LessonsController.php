@@ -34,7 +34,7 @@ class LessonsController extends AppController
     public function index()
     {
         $query = $this->Lessons->find()
-            ->contain(['Teachers']);
+            ->contain(['Teachers', 'Students']);
         $lessons = $this->paginate($query);
 
         $this->set(compact('lessons'));
@@ -49,7 +49,7 @@ class LessonsController extends AppController
      */
     public function view($id = null)
     {
-        $lesson = $this->Lessons->get($id, contain: ['Teachers']);
+        $lesson = $this->Lessons->get($id, contain: ['Teachers' => ['Users'], 'Students']);
         $this->set(compact('lesson'));
     }
 
@@ -71,7 +71,8 @@ class LessonsController extends AppController
             $this->Flash->error(__('The lesson could not be saved. Please, try again.'));
         }
         $teachers = $this->Lessons->Teachers->find('list', limit: 200)->all();
-        $this->set(compact('lesson', 'teachers'));
+        $students = $this->Lessons->Students->find('list', keyField: 'id', valueField: 'name', limit: 200)->all();
+        $this->set(compact('lesson', 'teachers', 'students'));
     }
 
     /**
@@ -83,7 +84,7 @@ class LessonsController extends AppController
      */
     public function edit($id = null)
     {
-        $lesson = $this->Lessons->get($id, contain: []);
+        $lesson = $this->Lessons->get($id, contain: ['Students']);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $lesson = $this->Lessons->patchEntity($lesson, $this->request->getData());
             if ($this->Lessons->save($lesson)) {
@@ -94,7 +95,8 @@ class LessonsController extends AppController
             $this->Flash->error(__('The lesson could not be saved. Please, try again.'));
         }
         $teachers = $this->Lessons->Teachers->find('list', limit: 200)->all();
-        $this->set(compact('lesson', 'teachers'));
+        $students = $this->Lessons->Students->find('list', keyField: 'id', valueField: 'name', limit: 200)->all();
+        $this->set(compact('lesson', 'teachers', 'students'));
     }
 
     /**

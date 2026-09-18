@@ -4,6 +4,7 @@
  * @var iterable<\App\Model\Entity\Lesson> $recent
  * @var iterable<\App\Model\Entity\Teacher> $teachers
  * @var array<array<string, string>> $calendarEvents
+ * @var bool $loggedIn
  */
 $this->assign('title', 'Lesson Planner');
 ?>
@@ -19,11 +20,15 @@ $this->assign('title', 'Lesson Planner');
 <section class="section">
     <div class="section__title">
         <span class="index">01</span>
-        <h2>Recent lessons</h2>
+        <h2>My recent lessons</h2>
     </div>
 
-    <?php if ($recent->isEmpty()) : ?>
-        <p class="empty-state">No lessons scheduled yet.</p>
+    <?php if (!$loggedIn) : ?>
+        <p class="empty-state">
+            <?= $this->Html->link('Log in', ['_name' => 'login']) ?> to see your lessons.
+        </p>
+    <?php elseif ($recent->isEmpty()) : ?>
+        <p class="empty-state">You have no lessons yet. Reserve time with a teacher below.</p>
     <?php else : ?>
         <ol class="swiss-list">
             <?php foreach ($recent as $i => $lesson) : ?>
@@ -86,10 +91,16 @@ $this->assign('title', 'Lesson Planner');
 <section class="section">
     <div class="section__title">
         <span class="index">03</span>
-        <h2>Schedule</h2>
+        <h2>My schedule</h2>
     </div>
 
-    <div id="calendar"></div>
+    <?php if ($loggedIn) : ?>
+        <div id="calendar"></div>
+    <?php else : ?>
+        <p class="empty-state">
+            <?= $this->Html->link('Log in', ['_name' => 'login']) ?> to see your schedule.
+        </p>
+    <?php endif; ?>
 </section>
 
 <?php $this->start('script'); ?>
@@ -97,6 +108,9 @@ $this->assign('title', 'Lesson Planner');
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) {
+            return;
+        }
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             headerToolbar: {

@@ -20,6 +20,7 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime $modified
  *
  * @property \App\Model\Entity\Teacher $teacher
+ * @property array<\App\Model\Entity\User> $students
  */
 class Lesson extends Entity
 {
@@ -43,5 +44,6 @@ class Lesson extends Entity
         'created' => true,
         'modified' => true,
         'teacher' => true,
+        'students' => true,
     ];
 }
