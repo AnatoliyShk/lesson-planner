@@ -3,6 +3,7 @@
  * @var \App\View\AppView $this
  * @var \App\Model\Entity\Lesson $lesson
  * @var \Cake\Collection\CollectionInterface|string[] $teachers
+ * @var \Cake\Collection\CollectionInterface|string[] $students
  */
 ?>
 <div class="row">
@@ -25,6 +26,7 @@
                     echo $this->Form->control('start_time');
                     echo $this->Form->control('end_time');
                     echo $this->Form->control('status');
+                    echo $this->Form->control('students._ids', ['options' => $students, 'multiple' => true]);
                 ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>

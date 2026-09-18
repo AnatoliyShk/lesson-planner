@@ -11,6 +11,8 @@ use Cake\Validation\Validator;
 /**
  * Users Model
  *
+ * @property \App\Model\Table\PasswordResetTokensTable&\Cake\ORM\Association\HasMany $PasswordResetTokens
+ * @property \App\Model\Table\LessonsTable&\Cake\ORM\Association\BelongsToMany $Lessons
  * @method \App\Model\Entity\User newEmptyEntity()
  * @method \App\Model\Entity\User newEntity(array $data, array $options = [])
  * @method array<\App\Model\Entity\User> newEntities(array $data, array $options = [])
@@ -48,6 +50,12 @@ class UsersTable extends Table
         $this->hasMany('PasswordResetTokens', [
             'foreignKey' => 'user_id',
             'dependent' => true,
+        ]);
+        // Lessons the user attends as a student.
+        $this->belongsToMany('Lessons', [
+            'foreignKey' => 'user_id',
+            'targetForeignKey' => 'lesson_id',
+            'joinTable' => 'lessons_users',
         ]);
     }
 

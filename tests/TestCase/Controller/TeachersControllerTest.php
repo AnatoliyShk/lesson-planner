@@ -25,6 +25,7 @@ class TeachersControllerTest extends TestCase
         'app.Teachers',
         'app.Users',
         'app.Lessons',
+        'app.LessonsUsers',
     ];
 
     /**

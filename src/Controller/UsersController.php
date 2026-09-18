@@ -212,7 +212,13 @@ class UsersController extends AppController
             $this->Flash->error('Please correct the errors below');
         }
 
-        $this->set(compact('user'));
+        $upcomingLessons = $this->Users->Lessons->find('attendedBy', userId: $user->id)
+            ->contain(['Teachers' => ['Users']])
+            ->where(['Lessons.end_time >=' => DateTime::now()])
+            ->orderBy(['Lessons.start_time' => 'ASC'])
+            ->all();
+
+        $this->set(compact('user', 'upcomingLessons'));
 
         return null;
     }

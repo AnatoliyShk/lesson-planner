@@ -81,6 +81,15 @@ $duration = trim(
                 : '—' ?>
         </dd>
 
+        <dt><?= __('Students') ?></dt>
+        <dd>
+            <?php if ($lesson->students) : ?>
+                <?= h(implode(', ', array_map(fn($student) => $student->name, $lesson->students))) ?>
+            <?php else : ?>
+                <span class="detail-list__muted"><?= __('No students yet') ?></span>
+            <?php endif; ?>
+        </dd>
+
         <dt><?= __('Status') ?></dt>
         <dd>
             <?php if ($lesson->status) : ?>
