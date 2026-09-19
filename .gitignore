@@ -51,3 +51,6 @@ nbproject/*
 # yarn
 yarn-debug.log
 yarn-error.log
+
+# SwaggerBake output, regenerated from /api routes (hot reload in debug, or `bin/cake swagger bake`)
+/webroot/swagger.json
