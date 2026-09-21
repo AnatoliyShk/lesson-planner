@@ -9,6 +9,7 @@ use Cake\ORM\Entity;
  * Lesson Entity
  *
  * @property int $id
+ * @property string|null $uuid Public UUIDv7 identifier (set on create; backfilled for older rows).
  * @property int $course_id
  * @property int $teacher_id
  * @property string $title

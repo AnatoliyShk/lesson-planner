@@ -83,11 +83,14 @@ class Application extends BaseApplication implements
             ]))
             ->add(new RoutingMiddleware($this))
             ->add(new BodyParserMiddleware())
-            ->add(new CsrfProtectionMiddleware([
+            ->add((new CsrfProtectionMiddleware([
                 'httponly' => true,
                 'secure' => !Configure::read('debug'),
                 'samesite' => 'Lax',
-            ]));
+            ]))->skipCheckCallback(
+                // The API is stateless (HTTP Basic, no session cookie), so there's no CSRF to guard.
+                fn(ServerRequestInterface $request) => $this->isApiRequest($request),
+            ));
 
         // Throttle credential endpoints. See Step 15 for the cache config.
         $middlewareQueue->add(new RateLimitMiddleware([
@@ -123,15 +126,38 @@ class Application extends BaseApplication implements
     public function getAuthenticationService(
         ServerRequestInterface $request
     ): AuthenticationServiceInterface {
-        $service = new AuthenticationService([
-            'unauthenticatedRedirect' => Router::url('/login'),
-            'queryParam' => 'redirect',
-        ]);
-
         $fields = [
             PasswordIdentifier::CREDENTIAL_USERNAME => 'email',
             PasswordIdentifier::CREDENTIAL_PASSWORD => 'password',
         ];
+        $identifier = [
+            'className' => 'Authentication.Password',
+            'fields' => $fields,
+            'resolver' => [
+                'className' => 'Authentication.Orm',
+                'userModel' => 'Users',
+                // Deactivated accounts cannot authenticate at all.
+                'finder' => 'active',
+            ],
+        ];
+
+        // API clients send email/password via HTTP Basic on every request:
+        // no session, and a 401 challenge instead of a redirect to /login.
+        if ($this->isApiRequest($request)) {
+            $service = new AuthenticationService();
+            $service->loadAuthenticator('Authentication.HttpBasic', [
+                'fields' => $fields,
+                'identifier' => $identifier,
+                'realm' => 'Lesson Planner API',
+            ]);
+
+            return $service;
+        }
+
+        $service = new AuthenticationService([
+            'unauthenticatedRedirect' => Router::url('/login'),
+            'queryParam' => 'redirect',
+        ]);
 
         // ORDER MATTERS. Session first: an existing login short-circuits
         // before the Form authenticator touches the database.
@@ -140,19 +166,23 @@ class Application extends BaseApplication implements
             'fields' => $fields,
             'loginUrl' => Router::url('/login'),
             // Authentication 4.x configures the identifier per authenticator.
-            'identifier' => [
-                'className' => 'Authentication.Password',
-                'fields' => $fields,
-                'resolver' => [
-                    'className' => 'Authentication.Orm',
-                    'userModel' => 'Users',
-                    // Deactivated accounts cannot authenticate at all.
-                    'finder' => 'active',
-                ],
-            ],
+            'identifier' => $identifier,
         ]);
 
         return $service;
+    }
+
+    /**
+     * Whether the request targets the REST API (`/api/*`).
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request Request.
+     * @return bool
+     */
+    protected function isApiRequest(ServerRequestInterface $request): bool
+    {
+        $path = $request->getUri()->getPath();
+
+        return $path === '/api' || str_starts_with($path, '/api/');
     }
 
     public function getAuthorizationService(

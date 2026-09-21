@@ -96,6 +96,9 @@ if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
 }
 
+// OpenAPI docs for /api (served at /docs). Loaded after app_local: it reads `debug` for hot reload.
+Configure::load('swagger_bake', 'default');
+
 /*
  * When debug = true the metadata cache should only last for a short time.
  */

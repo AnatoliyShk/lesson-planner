@@ -21,11 +21,29 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  */
 
+use App\Controller\ApiController;
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
 
 return function (RouteBuilder $routes): void {
     $routes->setRouteClass(DashedRoute::class);
+
+    // REST API. Declared before the '/' scope so its fallbacks can't
+    // swallow /api/* with the wrong HTTP method.
+    // Records are addressed by their public UUID, never by integer id.
+    $routes->scope('/api', ['controller' => 'Api'], function (RouteBuilder $builder): void {
+        $builder->get('/lessons', ['action' => 'lessons'], 'api:lessons');
+        $builder->get('/lessons/{uuid}', ['action' => 'lesson'], 'api:lesson')
+            ->setPass(['uuid'])
+            ->setPatterns(['uuid' => ApiController::UUID_PATTERN]);
+        $builder->post('/lessons', ['action' => 'addLesson'], 'api:lessons:add');
+
+        $builder->get('/teachers', ['action' => 'teachers'], 'api:teachers');
+        $builder->get('/teachers/{uuid}', ['action' => 'teacher'], 'api:teacher')
+            ->setPass(['uuid'])
+            ->setPatterns(['uuid' => ApiController::UUID_PATTERN]);
+        $builder->post('/teachers', ['action' => 'addTeacher'], 'api:teachers:add');
+    });
 
     $routes->scope('/', function (RouteBuilder $builder): void {
 
@@ -33,7 +51,10 @@ return function (RouteBuilder $routes): void {
 
         $builder->connect('/pages/*', 'Pages::display');
 
-        $builder->connect('/admin', ['controller' => 'Admin', 'action' => 'index'], ['_name' => 'admin']);
+        // Swagger UI for the /api endpoints.
+        $builder->connect('/docs', ['controller' => 'Docs', 'action' => 'index'], ['_name' => 'docs']);
+
+        $builder->connect('/admin',['controller' => 'Admin', 'action' => 'index'], ['_name' => 'admin']);
 
         $builder->scope('/', ['controller' => 'Users'], function (RouteBuilder $builder): void {
             $builder->connect('/login', ['action' => 'login'], ['_name' => 'login']);

@@ -28,6 +28,7 @@ use Cake\Validation\Validator;
  * @method iterable<\App\Model\Entity\User>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\User> deleteManyOrFail(iterable $entities, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin \App\Model\Behavior\UuidBehavior
  */
 class UsersTable extends Table
 {
@@ -46,6 +47,7 @@ class UsersTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('Uuid');
 
         $this->hasMany('PasswordResetTokens', [
             'foreignKey' => 'user_id',

@@ -13,4 +13,5 @@ return [
     ],
     'Authentication' => [],
     'Authorization' => [],
+    'SwaggerBake' => [],
 ];

@@ -17,6 +17,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Event\EventInterface;
+use Cake\View\JsonView;
 
 /**
  * Error Handling Controller
@@ -33,6 +34,17 @@ class ErrorController extends AppController
     public function initialize(): void
     {
         // Only add parent::initialize() if you are confident your `AppController` is safe.
+    }
+
+    /**
+     * Errors are rendered as JSON when the client asks for it (e.g. API
+     * requests with `Accept: application/json`), as HTML otherwise.
+     *
+     * @return array<string>
+     */
+    public function viewClasses(): array
+    {
+        return [JsonView::class];
     }
 
     /**

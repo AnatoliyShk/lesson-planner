@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Test\TestCase\Model\Table;
 
 use App\Model\Table\LessonsTable;
+use App\Utility\Uuid;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -149,5 +150,30 @@ class LessonsTableTest extends TestCase
     public function testBuildRules(): void
     {
         $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * New lessons get a UUIDv7 from UuidBehavior and can be fetched by it.
+     *
+     * @return void
+     */
+    public function testUuidAssignedOnCreate(): void
+    {
+        $lesson = $this->Lessons->newEntity([
+            'course_id' => 1,
+            'teacher_id' => 1,
+            'title' => 'New',
+            'start_time' => '2026-10-01 10:00:00',
+            'end_time' => '2026-10-01 11:00:00',
+        ]);
+        $this->Lessons->saveOrFail($lesson);
+
+        $this->assertTrue(Uuid::isValid($lesson->uuid));
+        $this->assertSame($lesson->id, $this->Lessons->getByUuid($lesson->uuid)->id);
+
+        // Not mass assignable, and never replaced on update.
+        $this->Lessons->patchEntity($lesson, ['uuid' => Uuid::v7(), 'title' => 'Renamed']);
+        $this->Lessons->saveOrFail($lesson);
+        $this->assertSame($lesson->uuid, $this->Lessons->get($lesson->id)->uuid);
     }
 }
