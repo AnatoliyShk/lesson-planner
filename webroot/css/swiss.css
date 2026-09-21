@@ -207,6 +207,26 @@ main {
     color: var(--color-muted);
 }
 
+.hero__profile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero__profile h1 {
+    margin: 0;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
 /* Section headings -------------------------------------------------------- */
 
 .section {
@@ -292,6 +312,15 @@ main {
     color: var(--color-muted);
     border-color: var(--color-border);
     cursor: not-allowed;
+}
+
+.button-swiss--outline {
+    background: transparent;
+    color: var(--color-fg);
+}
+
+.button-swiss--outline:hover {
+    color: var(--color-bg);
 }
 
 .button-swiss--sm {

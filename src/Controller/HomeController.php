@@ -31,12 +31,24 @@ class HomeController extends AppController
     {
         $this->Authorization->skipAuthorization();
 
+        $teachers = $this->fetchTable('Teachers')->find()
+            ->contain(['Users'])
+            ->where(['Teachers.active' => true])
+            ->orderBy(['Users.name' => 'ASC'])
+            ->all();
+
+        // Guests only get the teacher list and a prompt to log in or register.
         $identity = $this->Authentication->getIdentity();
+        $loggedIn = $identity !== null;
+        if (!$loggedIn) {
+            $this->set(compact('teachers', 'loggedIn'));
+
+            return;
+        }
+
         $lessons = $this->fetchTable('Lessons');
-        // Only lessons the logged-in user attends or teaches; guests see none.
-        $userLessons = fn() => $identity
-            ? $lessons->find('relatedTo', userId: (int)$identity->getIdentifier())
-            : $lessons->find()->where(['1 = 0']);
+        // Only lessons the logged-in user attends or teaches.
+        $userLessons = fn() => $lessons->find('relatedTo', userId: (int)$identity->getIdentifier());
 
         $calendarEvents = $userLessons()
             ->contain(['Teachers' => ['Users']])
@@ -60,12 +72,6 @@ class HomeController extends AppController
             ->all()
             ->toArray();
 
-        $teachers = $this->fetchTable('Teachers')->find()
-            ->contain(['Users'])
-            ->where(['Teachers.active' => true])
-            ->orderBy(['Users.name' => 'ASC'])
-            ->all();
-
         $this->set([
             'recent' => $userLessons()
                 ->contain(['Teachers' => ['Users']])
@@ -73,7 +79,8 @@ class HomeController extends AppController
                 ->limit(4)->all(),
             'teachers' => $teachers,
             'calendarEvents' => $calendarEvents,
-            'loggedIn' => $identity !== null,
+            'loggedIn' => $loggedIn,
+            'user' => $identity->getOriginalData(),
         ]);
     }
 }
