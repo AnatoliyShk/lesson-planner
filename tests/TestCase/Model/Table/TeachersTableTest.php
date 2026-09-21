@@ -27,6 +27,7 @@ class TeachersTableTest extends TestCase
         'app.Teachers',
         'app.Users',
         'app.Lessons',
+        'app.LessonsUsers',
     ];
 
     /**

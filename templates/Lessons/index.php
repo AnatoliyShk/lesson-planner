@@ -15,6 +15,7 @@
                     <th><?= $this->Paginator->sort('course_id') ?></th>
                     <th><?= $this->Paginator->sort('teacher_id') ?></th>
                     <th><?= $this->Paginator->sort('title') ?></th>
+                    <th><?= __('Students') ?></th>
                     <th><?= $this->Paginator->sort('start_time') ?></th>
                     <th><?= $this->Paginator->sort('end_time') ?></th>
                     <th><?= $this->Paginator->sort('status') ?></th>
@@ -30,6 +31,7 @@
                     <td><?= $this->Number->format($lesson->course_id) ?></td>
                     <td><?= $lesson->hasValue('teacher') ? $this->Html->link($lesson->teacher->id, ['controller' => 'Teachers', 'action' => 'view', $lesson->teacher->id]) : '' ?></td>
                     <td><?= h($lesson->title) ?></td>
+                    <td><?= h(implode(', ', array_map(fn($student) => $student->name, $lesson->students))) ?></td>
                     <td><?= h($lesson->start_time) ?></td>
                     <td><?= h($lesson->end_time) ?></td>
                     <td><?= h($lesson->status) ?></td>

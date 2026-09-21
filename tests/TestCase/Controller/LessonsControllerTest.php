@@ -24,6 +24,8 @@ class LessonsControllerTest extends TestCase
     protected array $fixtures = [
         'app.Lessons',
         'app.Teachers',
+        'app.Users',
+        'app.LessonsUsers',
     ];
 
     /**

@@ -19,6 +19,8 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime|null $last_login
  * @property \Cake\I18n\DateTime|null $created
  * @property \Cake\I18n\DateTime|null $modified
+ *
+ * @property array<\App\Model\Entity\Lesson> $lessons
  */
 class User extends Entity
 {
