@@ -10,6 +10,7 @@ use Cake\ORM\Entity;
  * User Entity
  *
  * @property int $id
+ * @property string|null $uuid Public UUIDv7 identifier (set on create; backfilled for older rows).
  * @property string $email
  * @property string $password
  * @property string $name

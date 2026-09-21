@@ -20,6 +20,7 @@ class UsersFixture extends TestFixture
         $this->records = [
             [
                 'id' => 1,
+                'uuid' => '01a0b589-0000-7000-8000-000000000001',
                 'email' => 'Lorem ipsum dolor sit amet',
                 'password' => 'Lorem ipsum dolor sit amet',
                 'name' => 'Lorem ipsum dolor sit amet',

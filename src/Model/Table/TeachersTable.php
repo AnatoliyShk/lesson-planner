@@ -29,6 +29,7 @@ use Cake\Validation\Validator;
  * @method iterable<\App\Model\Entity\Teacher>|\Cake\Datasource\ResultSetInterface<\App\Model\Entity\Teacher> deleteManyOrFail(iterable $entities, array $options = [])
  *
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin \App\Model\Behavior\UuidBehavior
  */
 class TeachersTable extends Table
 {
@@ -47,6 +48,7 @@ class TeachersTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+        $this->addBehavior('Uuid');
 
         $this->belongsTo('Users', [
             'foreignKey' => 'user_id',

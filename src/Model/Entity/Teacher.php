@@ -9,6 +9,7 @@ use Cake\ORM\Entity;
  * Teacher Entity
  *
  * @property int $id
+ * @property string|null $uuid Public UUIDv7 identifier (set on create; backfilled for older rows).
  * @property int $user_id
  * @property string|null $bio
  * @property bool $active

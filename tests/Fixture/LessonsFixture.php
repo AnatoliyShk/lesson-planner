@@ -20,6 +20,7 @@ class LessonsFixture extends TestFixture
         $this->records = [
             [
                 'id' => 1,
+                'uuid' => '01a0b589-0000-7000-8000-000000000003',
                 'course_id' => 1,
                 'teacher_id' => 1,
                 'title' => 'Lorem ipsum dolor sit amet',

@@ -1,0 +1,194 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Lesson Planner API
+  description: |
+    REST API for lessons and teachers. Every endpoint needs HTTP Basic auth with your
+    account's email and password: click **Authorize** above. POST bodies must be JSON.
+servers:
+  # Paths already include the /api prefix.
+  - url: /
+security:
+  - basicAuth: []
+paths:
+
+definitions:
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Exception:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 500
+        url:
+          type: string
+          example: /url/path
+        message:
+          type: string
+          example: Internal Error
+      xml:
+        name: response
+    OperationResult:
+      type: object
+      properties:
+        result:
+          type: boolean
+      xml:
+        name: response
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation failed.
+        errors:
+          type: object
+          description: Error messages keyed by field, then by rule.
+          example:
+            start_time:
+              _required: This field is required
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        perPage:
+          type: integer
+          example: 50
+        count:
+          type: integer
+          example: 23
+        pageCount:
+          type: integer
+          example: 1
+    TeacherUser:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 01923f4e-1111-7c3d-9e1f-2a3b4c5d6e7f
+        name:
+          type: string
+          example: Alice Novak
+        email:
+          type: string
+          format: email
+          example: alice.novak@lessonplanner.test
+    Teacher:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 01923f4e-2222-7c3d-9e1f-2a3b4c5d6e7f
+        bio:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/TeacherUser'
+    Lesson:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          example: 01923f4e-3333-7c3d-9e1f-2a3b4c5d6e7f
+        course_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Alice Novak 5 Oct 2026, 10:00 with Mia Schulz
+        description:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+          nullable: true
+        created:
+          type: string
+          format: date-time
+        modified:
+          type: string
+          format: date-time
+        teacher:
+          $ref: '#/components/schemas/Teacher'
+    LessonList:
+      type: object
+      properties:
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lesson'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    TeacherList:
+      type: object
+      properties:
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Teacher'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+x-swagger-bake:
+  components:
+    schemas:
+      Generic-Collection:
+        type: object
+        x-data-element: data
+        properties:
+          collection:
+            type: object
+            properties:
+              url:
+                type: string
+                format: url
+                example: /index
+              count:
+                type: integer
+                example: 20
+              total:
+                type: integer
+                example: 200
+              pages:
+                type: integer
+                example: 10
+              next:
+                type: string
+                format: url
+                example: /index?page=:number
+              prev:
+                type: string
+                format: url
+                example: /index?page=:number
+              first:
+                type: string
+                format: url
+                example: /index
+              last:
+                type: string
+                format: url
+                example: /index?page=:number
