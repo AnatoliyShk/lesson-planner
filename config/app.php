@@ -443,7 +443,6 @@ return [
             'session.cookie_httponly' => true,
             'session.cookie_samesite' => 'Lax',
             'session.use_strict_mode' => 1,       // reject attacker-supplied session IDs
-            'session.sid_length' => 48,
             'session.gc_maxlifetime' => 7200,
         ],
     ],

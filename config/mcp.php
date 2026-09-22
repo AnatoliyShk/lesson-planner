@@ -38,6 +38,10 @@ return [
             ],
         ],
         'Servers' => [
+            [
+                'route' => 'mcp',
+                'server' => \App\Mcp\Servers\AppServer::class,
+            ],
         ],
         'local' => [
         ],

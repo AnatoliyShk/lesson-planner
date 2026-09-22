@@ -4,6 +4,12 @@ services:
     ports: ["${APP_PORT:-8765}:8765"]
     volumes: [".:/app"]
     depends_on: [db]
+    # default keeps db and mailpit reachable — naming any network drops the
+    # implicit one. shared is where bulgolingo can be reached, at http://bulgolingo
+    networks:
+      default:
+      shared:
+        aliases: ["lesson-planner"]
     environment:
       DATABASE_URL: "mysql://${MYSQL_USER:-cake}:${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}@db/${MYSQL_DATABASE:-cake}?encoding=utf8mb4&timezone=UTC"
   db:
@@ -19,5 +25,13 @@ services:
     image: axllent/mailpit:latest
     ports:
       - "8025:8025"      # web UI
+# Shared with other projects on this machine (bulgolingo). External so neither
+# project owns it and either can start alone, which means it has to exist
+# first: docker network create shared
+networks:
+  shared:
+    external: true
+    name: shared
+
 volumes:
   dbdata:

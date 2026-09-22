@@ -41,7 +41,9 @@ use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use Cake\Routing\Router;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Application setup class.
@@ -88,8 +90,10 @@ class Application extends BaseApplication implements
                 'secure' => !Configure::read('debug'),
                 'samesite' => 'Lax',
             ]))->skipCheckCallback(
-                // The API is stateless (HTTP Basic, no session cookie), so there's no CSRF to guard.
-                fn(ServerRequestInterface $request) => $this->isApiRequest($request),
+                // The API and the MCP endpoint are stateless (HTTP Basic / JSON-RPC, no
+                // session cookie), so there's no CSRF to guard.
+                fn(ServerRequestInterface $request) => $this->isApiRequest($request)
+                    || $this->isMcpRequest($request),
             ));
 
         // Throttle credential endpoints. See Step 15 for the cache config.
@@ -108,10 +112,19 @@ class Application extends BaseApplication implements
             },
         ]));
 
-        // MUST come after RoutingMiddleware and BodyParserMiddleware.
         $middlewareQueue
             ->add(new AuthenticationMiddleware($this))
-            ->add(new AuthorizationMiddleware($this));
+            ->add(new AuthorizationMiddleware($this))
+            ->add(function (
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler,
+            ): ResponseInterface {
+                if ($request->getParam('plugin') === 'Crustum/Mcp') {
+                    $request->getAttribute('authorization')?->skipAuthorization();
+                }
+
+                return $handler->handle($request);
+            });
 
         if (!Configure::read('debug')) {
             $middlewareQueue->insertAfter(
@@ -183,6 +196,16 @@ class Application extends BaseApplication implements
         $path = $request->getUri()->getPath();
 
         return $path === '/api' || str_starts_with($path, '/api/');
+    }
+
+    /**
+     * Whether the request targets the MCP JSON-RPC endpoint registered in config/mcp.php.
+     */
+    protected function isMcpRequest(ServerRequestInterface $request): bool
+    {
+        $path = $request->getUri()->getPath();
+
+        return $path === '/mcp' || str_starts_with($path, '/mcp/');
     }
 
     public function getAuthorizationService(
