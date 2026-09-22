@@ -10,7 +10,7 @@ use Crustum\Mcp\Response;
 use Crustum\Mcp\Server\Attributes\Description;
 use Crustum\Mcp\Server\Tool;
 
-#[Description('Lists teachers, identified by the public uuid used by other tools and the teacher:// resource.')]
+#[Description('Lesson Planner: lists teachers, identified by the public uuid used by list-lessons-tool and the teacher:// resource. Call this first when asked for lessons from the planner.')]
 class ListTeachersTool extends Tool
 {
     /**

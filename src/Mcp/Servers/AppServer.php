@@ -12,9 +12,9 @@ use Crustum\Mcp\Server\Attributes\Instructions;
 use Crustum\Mcp\Server\Attributes\Name;
 use Crustum\Mcp\Server\Attributes\Version;
 
-#[Name('App Server')]
+#[Name('Lesson Planner')]
 #[Version('0.0.1')]
-#[Instructions('Instructions describing how to use the server and its features.')]
+#[Instructions('Lesson Planner: the tutoring schedule of one-to-one lessons booked between teachers and students, each with a date, time, student and topic. Use these tools whenever the user mentions the planner, the lesson planner, the schedule, teachers or booked sessions, for example "lessons list from planner". These are not BalkanBuddy course lessons. To list every lesson, call list-teachers-tool, then list-lessons-tool once per teacher uuid.')]
 class AppServer extends Server
 {
     /**

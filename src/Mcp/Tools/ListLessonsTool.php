@@ -11,7 +11,7 @@ use Crustum\Mcp\Response;
 use Crustum\Mcp\Server\Attributes\Description;
 use Crustum\Mcp\Server\Tool;
 
-#[Description('Lists all lessons taught by a given teacher, identified by the teacher\'s public uuid.')]
+#[Description('Lesson Planner: lists the scheduled lessons (date, time, student, topic) taught by one teacher, identified by the teacher\'s public uuid from list-teachers-tool. Use for lessons from the planner or the schedule, not for BalkanBuddy course lessons.')]
 class ListLessonsTool extends Tool
 {
     /**
