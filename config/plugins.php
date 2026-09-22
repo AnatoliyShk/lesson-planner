@@ -14,4 +14,6 @@ return [
     'Authentication' => [],
     'Authorization' => [],
     'SwaggerBake' => [],
+    'Crustum/Mcp' => [],
+    'Crustum/PluginManifest' => [],
 ];

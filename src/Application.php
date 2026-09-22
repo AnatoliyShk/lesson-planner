@@ -131,13 +131,14 @@ class Application extends BaseApplication implements
             PasswordIdentifier::CREDENTIAL_PASSWORD => 'password',
         ];
         $identifier = [
-            'className' => 'Authentication.Password',
-            'fields' => $fields,
-            'resolver' => [
-                'className' => 'Authentication.Orm',
-                'userModel' => 'Users',
-                // Deactivated accounts cannot authenticate at all.
-                'finder' => 'active',
+            'Authentication.Password' => [
+                'fields' => $fields,
+                'resolver' => [
+                    'className' => 'Authentication.Orm',
+                    'userModel' => 'Users',
+                    // Deactivated accounts cannot authenticate at all.
+                    'finder' => 'active',
+                ],
             ],
         ];
 
@@ -165,7 +166,6 @@ class Application extends BaseApplication implements
         $service->loadAuthenticator('Authentication.Form', [
             'fields' => $fields,
             'loginUrl' => Router::url('/login'),
-            // Authentication 4.x configures the identifier per authenticator.
             'identifier' => $identifier,
         ]);
 
