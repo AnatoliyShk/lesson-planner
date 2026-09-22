@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Resources\LessonResource;
+use App\Mcp\Resources\TeacherResource;
+use App\Mcp\Tools\ListLessonsTool;
+use App\Mcp\Tools\ListTeachersTool;
 use Crustum\Mcp\Server;
 use Crustum\Mcp\Server\Attributes\Instructions;
 use Crustum\Mcp\Server\Attributes\Name;
@@ -19,6 +23,8 @@ class AppServer extends Server
      * @var array<int, class-string<\Crustum\Mcp\Server\Tool>|\Crustum\Mcp\Server\Tool>
      */
     protected array $tools = [
+        ListLessonsTool::class,
+        ListTeachersTool::class,
     ];
 
     /**
@@ -27,6 +33,8 @@ class AppServer extends Server
      * @var array<int, class-string<\Crustum\Mcp\Server\Resource>|\Crustum\Mcp\Server\Resource>
      */
     protected array $resources = [
+        LessonResource::class,
+        TeacherResource::class,
     ];
 
     /**
