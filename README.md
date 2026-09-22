@@ -16,6 +16,8 @@ auth, admin, and scheduling features layered on.
   status) assigned to teachers, who are linked to user accounts.
 - **Home page** — recent lessons list plus a full month calendar
   ([FullCalendar](https://fullcalendar.io)) of all scheduled lessons.
+- **MCP server** — read-only access to teachers and lessons for AI clients
+  over the Model Context Protocol at `/mcp` (see [MCP server](#mcp-server)).
 - **Design** — a small custom Swiss / International Typographic Style
   stylesheet (`webroot/css/swiss.css`), used across all pages instead of the
   skeleton's default Milligram CSS.
@@ -67,9 +69,12 @@ installed locally.
    This file is read by CakePHP directly (via the dotenv loader in
    `config/bootstrap.php`) and is separate from the root-level `.env` above.
 
-4. **Build and start the containers:**
+4. **Build and start the containers.** The `app` service also joins an
+   external `shared` network (used to reach other local projects, see
+   [MCP server](#mcp-server)), so create it once first:
 
    ```bash
+   docker network create shared
    docker compose up -d --build
    ```
 
@@ -105,6 +110,75 @@ installed locally.
    docker compose exec db mysql -u root -p'<MYSQL_ROOT_PASSWORD from .env>' cake \
      -e "UPDATE users SET role = 'admin' WHERE email = 'you@example.com';"
    ```
+
+## MCP server
+
+The app exposes a [Model Context Protocol](https://modelcontextprotocol.io)
+server via the [`crustum/mcp`](https://packagist.org/packages/crustum/mcp)
+plugin, so AI clients (Claude, Cursor, VS Code, …) can read the lesson
+schedule.
+
+- **Endpoint:** `http://localhost:8765/mcp` (streamable HTTP, JSON-RPC).
+- **Server:** `src/Mcp/Servers/AppServer.php`, registered in `config/mcp.php`
+  under `Mcp.Servers`.
+
+### Tools
+
+| Tool                 | Input                          | Returns                                                                 |
+| -------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| `list-teachers-tool` | `active` (bool, optional)      | Teachers: `uuid`, `name`, `email`, `bio`, `active`                      |
+| `list-lessons-tool`  | `teacher_uuid` (string, req.)  | That teacher's lessons, newest first: `uuid`, `title`, `description`, `start_time`, `end_time`, `status` |
+
+To list every lesson, a client calls `list-teachers-tool` and then
+`list-lessons-tool` once per teacher uuid (the server's instructions tell the
+model to do exactly that).
+
+### Resources
+
+| URI template        | Contents                                                        |
+| ------------------- | --------------------------------------------------------------- |
+| `teacher://{uuid}`  | Teacher profile (name, email, bio, active) plus their lessons   |
+| `lesson://{uuid}`   | Lesson schedule and status, its teacher, and enrolled students  |
+
+All records are addressed by their public `uuid`, never the internal id.
+
+### Connecting a client
+
+Claude Code:
+
+```bash
+claude mcp add --transport http lesson-planner http://localhost:8765/mcp
+```
+
+Other clients take the same URL as an HTTP MCP server. You can also poke at
+it with the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector
+# transport: Streamable HTTP, URL: http://localhost:8765/mcp
+```
+
+Containers on the `shared` Docker network (e.g. a sibling project) can reach
+it at `http://lesson-planner:8765/mcp`.
+
+### Security notes
+
+- The endpoint is currently **unauthenticated**: `/mcp` is exempt from CSRF
+  (`Application::isMcpRequest()`), and authorization checks are skipped for
+  requests routed to the `Crustum/Mcp` plugin. Anyone who can reach the port
+  can read teacher names/emails and the lesson schedule.
+- The plugin ships an OAuth middleware (`tesseraOAuth` in `config/mcp.php`,
+  `apply => false`). Before exposing the app beyond localhost, enable it on
+  the server entry and set `require_web_auth_middleware` to `true`.
+
+### Adding a tool or resource
+
+1. Create a class in `src/Mcp/Tools/` extending `Crustum\Mcp\Server\Tool`
+   (implement `handle()` and `schema()`), or in `src/Mcp/Resources/` extending
+   `Crustum\Mcp\Server\Resource` and implementing `HasUriTemplate`.
+2. Describe it with the `#[Description(...)]` attribute — this is what the
+   model sees when choosing a tool.
+3. Add the class to `$tools` / `$resources` in `AppServer`.
 
 ## Useful commands
 
